@@ -115,8 +115,11 @@
       ...(hero.highlight ? [rotator(hero.highlight, 120)] : []),
     ]);
     const text = el('div', { className: 'hero-text' }, [h1, ...(hero.sub ? [line('sub', hero.sub, 280)] : [])]);
-    const src = hero.image || (about && about.image);
-    const photo = src ? el('figure', { className: 'hero-photo reveal' }, [el('img', { src, alt: 'Portrait', decoding: 'async', draggable: false })]) : null;
+    // no custom hero photo → the halftone portrait drawn in code (instant, no download)
+    const media = hero.image ? el('img', { src: hero.image, alt: 'Portrait', decoding: 'async', draggable: false })
+      : window.makePortrait ? window.makePortrait()
+      : (about && about.image) ? el('img', { src: about.image, alt: 'Portrait', decoding: 'async', draggable: false }) : null;
+    const photo = media ? el('figure', { className: 'hero-photo reveal' }, [media]) : null;
     if (photo) photo.style.setProperty('--d', '200ms');
     return el('section', { className: 'hero' + (photo ? ' has-photo' : ''), id: 'hero' }, photo ? [text, photo] : [text]);
   }
