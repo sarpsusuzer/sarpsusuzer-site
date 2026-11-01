@@ -9,7 +9,6 @@
 
   fetch('/content.json', { cache: 'no-store' }).then((r) => r.json()).then(({ site, about }) => {
     $('#site-name').textContent = site.name;
-    $('#site-role').textContent = site.role;
     document.title = `About — ${site.name}`;
     $('#site-nav').replaceChildren(...site.nav.map((n) => {
       const a = el('a', { href: n.href.startsWith('#') ? '/' + n.href : n.href, textContent: n.label }); // #anchors live on the home page

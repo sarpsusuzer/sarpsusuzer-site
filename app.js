@@ -8,7 +8,6 @@
 
   function renderHeader(site) {
     $('#site-name').textContent = site.name;
-    $('#site-role').textContent = site.role;
     document.title = site.name;
     const nav = $('#site-nav');
     nav.replaceChildren(...site.nav.map((n) => {
