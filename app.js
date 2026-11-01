@@ -115,17 +115,28 @@
       ...(hero.highlight ? [rotator(hero.highlight, 120)] : []),
     ]);
     const text = el('div', { className: 'hero-text' }, [h1, ...(hero.sub ? [line('sub', hero.sub, 280)] : [])]);
-    // no custom hero photo → the halftone portrait drawn in code (instant, no download)
-    const media = hero.image ? el('img', { src: hero.image, alt: 'Portrait', decoding: 'async', draggable: false })
-      : window.makePortrait ? window.makePortrait()
-      : (about && about.image) ? el('img', { src: about.image, alt: 'Portrait', decoding: 'async', draggable: false }) : null;
+    const src = hero.image || (about && about.image);
+    const media = src ? el('img', { src, alt: 'Portrait', decoding: 'async', draggable: false }) : null;
     const photo = media ? el('figure', { className: 'hero-photo reveal' }, [media]) : null;
     if (photo) photo.style.setProperty('--d', '200ms');
     return el('section', { className: 'hero' + (photo ? ' has-photo' : ''), id: 'hero' }, photo ? [text, photo] : [text]);
   }
 
-  function renderProjects(projects, hero, about) {
+  function renderCta(cta) {
+    if (!cta || !cta.url || !(cta.headline || cta.label)) return null;
+    const ext = /^https?:/.test(cta.url);
+    const rv = (n, d) => { n.classList.add('reveal'); n.style.setProperty('--d', d + 'ms'); return n; };
+    const btn = el('a', { className: 'cta-btn', href: cta.url, textContent: cta.label || 'Book a call', ...(ext ? { target: '_blank', rel: 'noopener' } : {}) });
+    return el('section', { className: 'cta', id: 'contact' }, [
+      ...(cta.headline ? [rv(el('h2', { className: 'cta-title', textContent: cta.headline }), 0)] : []),
+      ...(cta.sub ? [rv(el('p', { className: 'cta-sub', textContent: cta.sub }), 100)] : []),
+      rv(btn, 200),
+    ]);
+  }
+
+  function renderProjects(projects, hero, about, cta) {
     const heroEl = renderHero(hero, about);
+    const ctaEl = renderCta(cta);
     $('#projects').replaceChildren(...(heroEl ? [heroEl] : []), ...projects.map((p) => {
       const logo = p.logo ? el('img', { src: p.logo, alt: p.name }) : el('span', { className: 'name', textContent: p.name });
       const tagline = el('p', { className: 'tagline', textContent: p.tagline });
@@ -133,7 +144,7 @@
       const head = el('div', { className: 'project-head' }, [logo, tagline]);
       [[logo, 0], [tagline, 90], [stage, 180]].forEach(([n, d]) => { n.classList.add('reveal'); n.style.setProperty('--d', d + 'ms'); });
       return el('section', { className: 'project' + (p.locked ? ' locked' : ''), id: p.id, ariaLabel: p.name }, [head, stage]);
-    }));
+    }), ...(ctaEl ? [ctaEl] : []));
     observeReveals();
   }
 
@@ -152,7 +163,7 @@
         }
       });
     }, { threshold: [0, 0.3] });
-    document.querySelectorAll('.hero, .project').forEach((p) => io.observe(p));
+    document.querySelectorAll('.hero, .project, .cta').forEach((p) => io.observe(p));
   }
 
   // Snap: one scroll gesture steps exactly one project, animated.
@@ -160,8 +171,8 @@
     const TOP = 160; // logo row y in the design
     const stops = () => {
       const max = document.documentElement.scrollHeight - innerHeight;
-      return [...document.querySelectorAll('.hero, .project')]
-        .map((s) => (s.classList.contains('hero') ? 0 : Math.min(Math.max(0, s.offsetTop - TOP), max)))
+      return [...document.querySelectorAll('.hero, .project, .cta')]
+        .map((s) => (s.classList.contains('hero') ? 0 : s.classList.contains('cta') ? Math.min(s.offsetTop, max) : Math.min(Math.max(0, s.offsetTop - TOP), max)))
         .filter((y, i, a) => a.indexOf(y) === i);
     };
     const nearest = (ys, y) => ys.reduce((b, v, i) => (Math.abs(v - y) < Math.abs(ys[b] - y) ? i : b), 0);
@@ -323,7 +334,7 @@
 
   fetch('/content.json', { cache: 'no-store' })
     .then((r) => r.json())
-    .then((c) => { renderHeader(c.site); renderProjects(c.projects, c.hero, c.about);
+    .then((c) => { renderHeader(c.site); renderProjects(c.projects, c.hero, c.about, c.cta);
       renderDock(c.projects, enableSnap());
       requestAnimationFrame(() => requestAnimationFrame(() => document.querySelectorAll('.top .reveal').forEach((n) => n.classList.add('in')))); })
     .catch(() => { $('#projects').textContent = 'Could not load projects.'; });
