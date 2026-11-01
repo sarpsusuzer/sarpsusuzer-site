@@ -62,7 +62,7 @@ a { color: inherit; text-decoration: none; }
 
 /* projects */
 #projects {
-  padding-top: var(--first-row-top);
+  padding-top: 0;
   padding-bottom: max(0px, calc(100vh - 852.83px));
 }
 
@@ -129,6 +129,15 @@ a { color: inherit; text-decoration: none; }
 
 @media (max-width: 600px) {
   :root { --card-radius: 14px; --gap: 12px; }
+  .dock { gap: 0; height: 64px; overflow-x: auto; scrollbar-width: none; }
+  .dock::-webkit-scrollbar { display: none; }
+  .dock-item { flex: 0 0 auto; }
+  .dock .dock-clone { display: grid; }
+  .dock { justify-content: flex-start; }
+  .dock { transition: opacity .4s var(--ease), transform .4s var(--ease); }
+  .dock.has-hero:not(.on-hero) { opacity: 0; pointer-events: none; transform: translateY(12px); }
+  .dock-item { padding: 0 8px; }
+  .dock-item img { height: 16px; }
   .project-head .tagline { font-size: 13px; white-space: normal; text-align: right; }
 }
 
@@ -171,7 +180,7 @@ a { color: inherit; text-decoration: none; }
   height: 72px;
   display: flex;
   align-items: center;
-  justify-content: center;
+  justify-content: safe center;
   gap: 8px;
   --d: 300ms;
 }
@@ -190,6 +199,7 @@ a { color: inherit; text-decoration: none; }
   filter: grayscale(1);
   transition: opacity 0.3s var(--ease), background 0.3s var(--ease);
 }
+.dock-clone { display: none; }
 .dock-item img { height: 20px; width: auto; display: block; }
 .dock-item:hover, .dock-item:focus-visible { opacity: 0.8; background: #f4f4f4; }
 .dock-item[aria-current="true"] { opacity: 1; }
@@ -261,6 +271,8 @@ a { color: inherit; text-decoration: none; }
   font-size: 56px;
   letter-spacing: -0.04em;
   color: var(--text-muted);
+  -webkit-mask-image: linear-gradient(to bottom, #000 62%, transparent 100%);
+  mask-image: linear-gradient(to bottom, #000 62%, transparent 100%);
 }
 .about-photo img { width: 100%; height: 100%; object-fit: cover; display: block; }
 
@@ -272,7 +284,7 @@ a { color: inherit; text-decoration: none; }
 
 @media (max-width: 720px) {
   .about { grid-template-columns: 1fr; gap: 32px; padding-top: 120px; }
-  .about-photo { max-width: 320px; }
+  .about-photo { width: 100%; max-width: 400px; margin-left: auto; justify-self: end; }
   .about-lead { font-size: 24px; }
 }
 
@@ -294,3 +306,42 @@ a { color: inherit; text-decoration: none; }
 }
 .lock svg { flex: none; }
 .locked .slide img.settle { animation: none; }
+
+/* hero */
+.hero {
+  min-height: 100vh;
+  width: var(--col);
+  margin: 0 auto;
+  padding: var(--header-h) 0 72px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 48px;
+}
+.hero-text { flex: 0 0 auto; display: flex; flex-direction: column; gap: 20px; min-width: 0; }
+.hero-title {
+  font-weight: 400;
+  font-size: clamp(30px, 3.6vw, 52px);
+  line-height: 1.05;
+  letter-spacing: -0.04em;
+  color: #1a1a1a;
+}
+.hero-line { display: block; white-space: nowrap; }
+.hero-muted { color: var(--text-muted); }
+.hero-rotor { position: relative; }
+.hero-sizer { visibility: hidden; display: block; white-space: nowrap; }
+.hero-word { position: absolute; left: 0; top: 0; white-space: nowrap; opacity: 0; filter: blur(8px); transform: translateY(0.25em); transition: opacity .6s ease, filter .6s ease, transform .6s cubic-bezier(.2,.7,.2,1); }
+.hero-word.on { opacity: 1; filter: blur(0); transform: none; }
+.hero-word:first-child:last-of-type { position: static; }
+.hero-sub { font-size: 16px; line-height: 1.45; letter-spacing: -0.01em; color: #6e6e6e; max-width: 420px; }
+/* portrait shown as uploaded: no card, radius or background */
+.hero-photo { flex: 0 0 auto; width: min(800px, 58%); min-width: 0; flex: 0 1 auto; }
+.hero-photo img { width: 100%; height: auto; max-height: calc(100vh - var(--header-h) - 40px); mix-blend-mode: multiply; -webkit-mask-image: linear-gradient(to bottom, #000 62%, transparent 100%); mask-image: linear-gradient(to bottom, #000 62%, transparent 100%); object-fit: contain; object-position: right center; display: block; user-select: none; -webkit-user-drag: none; }
+@media (max-width: 700px) {
+  .hero { flex-direction: column; align-items: flex-start; justify-content: flex-start; gap: 12px; padding: calc(var(--header-h) + 28px) 0 88px; }
+  .hero-text { gap: 14px; }
+  .hero-title { font-size: clamp(38px, 11vw, 48px); }
+  .hero-sub { font-size: 15px; }
+  .hero-photo { width: 100%; max-width: 420px; align-self: center; }
+  .hero-photo img { max-height: 56vh; object-position: center top; }
+}

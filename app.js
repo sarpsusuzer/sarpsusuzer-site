@@ -84,8 +84,46 @@
     return stage;
   }
 
-  function renderProjects(projects) {
-    $('#projects').replaceChildren(...projects.map((p) => {
+  // grey line: one word per line, cycling every 2s with a blur-fade swap
+  function rotator(text, d) {
+    const words = text.split('\n').map((w) => w.trim()).filter(Boolean);
+    const box = el('span', { className: 'hero-line hero-muted hero-rotor reveal' });
+    box.style.setProperty('--d', d + 'ms');
+    const spans = words.map((w, i) => el('span', { className: 'hero-word' + (i ? '' : ' on'), textContent: w }));
+    box.append(...spans);
+    if (spans.length > 1) {
+      // reserve the widest word so nothing shifts
+      const sizer = el('span', { className: 'hero-sizer', textContent: words.reduce((a, b) => (b.length > a.length ? b : a)), ariaHidden: 'true' });
+      box.append(sizer);
+      let i = 0;
+      if (!matchMedia('(prefers-reduced-motion: reduce)').matches) {
+        setInterval(() => {
+          spans[i].classList.remove('on');
+          i = (i + 1) % spans.length;
+          spans[i].classList.add('on');
+        }, 2000);
+      }
+    }
+    return box;
+  }
+
+  function renderHero(hero, about) {
+    if (!hero || !(hero.headline || hero.highlight)) return null;
+    const line = (cls, text, d) => { const n = el(cls === 'sub' ? 'p' : 'span', { className: `hero-${cls} reveal`, textContent: text }); n.style.setProperty('--d', d + 'ms'); return n; };
+    const h1 = el('h1', { className: 'hero-title' }, [
+      ...(hero.headline ? [line('line', hero.headline, 0)] : []),
+      ...(hero.highlight ? [rotator(hero.highlight, 120)] : []),
+    ]);
+    const text = el('div', { className: 'hero-text' }, [h1, ...(hero.sub ? [line('sub', hero.sub, 280)] : [])]);
+    const src = hero.image || (about && about.image);
+    const photo = src ? el('figure', { className: 'hero-photo reveal' }, [el('img', { src, alt: 'Portrait', decoding: 'async', draggable: false })]) : null;
+    if (photo) photo.style.setProperty('--d', '200ms');
+    return el('section', { className: 'hero' + (photo ? ' has-photo' : ''), id: 'hero' }, photo ? [text, photo] : [text]);
+  }
+
+  function renderProjects(projects, hero, about) {
+    const heroEl = renderHero(hero, about);
+    $('#projects').replaceChildren(...(heroEl ? [heroEl] : []), ...projects.map((p) => {
       const logo = p.logo ? el('img', { src: p.logo, alt: p.name }) : el('span', { className: 'name', textContent: p.name });
       const tagline = el('p', { className: 'tagline', textContent: p.tagline });
       const stage = carousel(p);
@@ -111,7 +149,7 @@
         }
       });
     }, { threshold: [0, 0.3] });
-    document.querySelectorAll('.project').forEach((p) => io.observe(p));
+    document.querySelectorAll('.hero, .project').forEach((p) => io.observe(p));
   }
 
   // Snap: one scroll gesture steps exactly one project, animated.
@@ -119,8 +157,8 @@
     const TOP = 160; // logo row y in the design
     const stops = () => {
       const max = document.documentElement.scrollHeight - innerHeight;
-      return [...document.querySelectorAll('.project')]
-        .map((s) => Math.min(Math.max(0, s.offsetTop - TOP), max))
+      return [...document.querySelectorAll('.hero, .project')]
+        .map((s) => (s.classList.contains('hero') ? 0 : Math.min(Math.max(0, s.offsetTop - TOP), max)))
         .filter((y, i, a) => a.indexOf(y) === i);
     };
     const nearest = (ys, y) => ys.reduce((b, v, i) => (Math.abs(v - y) < Math.abs(ys[b] - y) ? i : b), 0);
@@ -148,10 +186,12 @@
       scrollToY(target);
     };
 
+    const heroOffset = () => (document.querySelector('.hero') ? 1 : 0);
+
     // dock: jump to a project by index and report which one is current
     const dockApi = {
-      goTo: (i) => { const ys = stops(); if (ys[i] !== undefined) { target = ys[i]; scrollToY(target); } },
-      current: () => { const ys = stops(); return nearest(ys, animating && target !== null ? target : scrollY); },
+      goTo: (i) => { const ys = stops(); i += heroOffset(); if (ys[i] !== undefined) { target = ys[i]; scrollToY(target); } },
+      current: () => { const ys = stops(); return nearest(ys, animating && target !== null ? target : scrollY) - heroOffset(); },
     };
 
     // wheel / trackpad: one step per gesture; ignore the inertia tail until the input goes quiet
@@ -221,6 +261,47 @@
     sync();
     addEventListener('scroll', () => requestAnimationFrame(sync), { passive: true });
     requestAnimationFrame(() => dock.classList.add('in'));
+    // phones: logos slide on their own as a looping marquee (clones fill the loop)
+    const mq = matchMedia('(max-width: 600px)');
+    const clones = [];
+    projects.forEach((p, i) => {
+      for (let k = 0; k < 2; k++) {
+        const c = btns[i].cloneNode(true);
+        c.classList.add('dock-clone');
+        c.setAttribute('aria-hidden', 'true');
+        c.tabIndex = -1;
+        c.addEventListener('click', () => api.goTo(i));
+        clones.push(c);
+      }
+    });
+    dock.append(...clones);
+    let pos = 0, hold = 0, running = false;
+    const setW = () => { const c = dock.querySelector('.dock-clone'); return c ? c.offsetLeft - btns[0].offsetLeft : 0; };
+    const hush = () => { hold = performance.now() + 2000; };
+    ['touchstart', 'pointerdown', 'wheel'].forEach((t) => dock.addEventListener(t, hush, { passive: true }));
+    const tick = () => {
+      if (!mq.matches) { running = false; return; }
+      const w = setW();
+      if (w > 0 && dock.classList.contains('on-hero')) {
+        if (performance.now() < hold) pos = dock.scrollLeft;
+        else {
+          pos += 0.45;
+          if (pos >= w) pos -= w;
+          dock.scrollLeft = pos;
+        }
+        if (dock.scrollLeft < 1 && performance.now() < hold) { pos = w; dock.scrollLeft = w; }
+      }
+      requestAnimationFrame(tick);
+    };
+    const start = () => { if (mq.matches && !running && !matchMedia('(prefers-reduced-motion: reduce)').matches) { running = true; requestAnimationFrame(tick); } };
+    mq.addEventListener('change', () => { dock.scrollLeft = 0; pos = 0; start(); });
+    start();
+    // on phones the dock only shows while the hero is on screen
+    const hero = $('#hero');
+    if (hero) {
+      dock.classList.add('has-hero', 'on-hero');
+      new IntersectionObserver(([e]) => dock.classList.toggle('on-hero', e.isIntersecting), { threshold: 0.35 }).observe(hero);
+    }
   }
 
   // progressive blur backdrops for the fixed header and dock
@@ -231,10 +312,15 @@
   }
   addProgressiveBlur($('.top'), 'top');
   addProgressiveBlur($('#dock'), 'bottom');
+  // the dock scrolls sideways on narrow screens; keep its blur backdrop pinned
+  $('#dock').addEventListener('scroll', (e) => {
+    const pb = e.currentTarget.querySelector('.pblur');
+    if (pb) pb.style.transform = `translateX(${e.currentTarget.scrollLeft}px)`;
+  }, { passive: true });
 
   fetch('/content.json', { cache: 'no-store' })
     .then((r) => r.json())
-    .then((c) => { renderHeader(c.site); renderProjects(c.projects);
+    .then((c) => { renderHeader(c.site); renderProjects(c.projects, c.hero, c.about);
       renderDock(c.projects, enableSnap());
       requestAnimationFrame(() => requestAnimationFrame(() => document.querySelectorAll('.top .reveal').forEach((n) => n.classList.add('in')))); })
     .catch(() => { $('#projects').textContent = 'Could not load projects.'; });
