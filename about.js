@@ -7,7 +7,20 @@
   for (let k = 0; k < 6; k++) wrap.append(document.createElement('i'));
   $('.top').prepend(wrap);
 
+
+  // Google Analytics (GA4): loads only on the live site, and only when a measurement ID is set in the CMS
+  function loadAnalytics(id) {
+    if (!/^G-[A-Z0-9]{4,20}$/.test(id || '') || /^(localhost|127\.|\[::1\])/.test(location.hostname)) return;
+    window.dataLayer = window.dataLayer || [];
+    window.gtag = function () { window.dataLayer.push(arguments); };
+    gtag('js', new Date()); gtag('config', id);
+    const s = document.createElement('script');
+    s.async = true; s.src = 'https://www.googletagmanager.com/gtag/js?id=' + id;
+    document.head.append(s);
+  }
+
   fetch('/content.json', { cache: 'no-store' }).then((r) => r.json()).then(({ site, about }) => {
+    loadAnalytics(site.analyticsId);
     $('#site-name').textContent = site.name;
     document.title = `About — ${site.name}`;
     $('#site-nav').replaceChildren(...site.nav.map((n) => {

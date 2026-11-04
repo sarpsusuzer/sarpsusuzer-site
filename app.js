@@ -121,6 +121,18 @@
     return el('section', { className: 'hero' + (photo ? ' has-photo' : ''), id: 'hero' }, photo ? [text, photo] : [text]);
   }
 
+
+  // Google Analytics (GA4): loads only on the live site, and only when a measurement ID is set in the CMS
+  function loadAnalytics(id) {
+    if (!/^G-[A-Z0-9]{4,20}$/.test(id || '') || /^(localhost|127\.|\[::1\])/.test(location.hostname)) return;
+    window.dataLayer = window.dataLayer || [];
+    window.gtag = function () { window.dataLayer.push(arguments); };
+    gtag('js', new Date()); gtag('config', id);
+    const s = document.createElement('script');
+    s.async = true; s.src = 'https://www.googletagmanager.com/gtag/js?id=' + id;
+    document.head.append(s);
+  }
+
   function renderCta(cta) {
     if (!cta || !cta.url || !(cta.headline || cta.label)) return null;
     const ext = /^https?:/.test(cta.url);
@@ -333,7 +345,7 @@
 
   fetch('/content.json', { cache: 'no-store' })
     .then((r) => r.json())
-    .then((c) => { renderHeader(c.site); renderProjects(c.projects, c.hero, c.about, c.cta);
+    .then((c) => { renderHeader(c.site); loadAnalytics(c.site.analyticsId); renderProjects(c.projects, c.hero, c.about, c.cta);
       renderDock(c.projects, enableSnap());
       requestAnimationFrame(() => requestAnimationFrame(() => document.querySelectorAll('.top .reveal').forEach((n) => n.classList.add('in')))); })
     .catch(() => { $('#projects').textContent = 'Could not load projects.'; });
