@@ -1,0 +1,5 @@
+# sarpsusuzer.com: everyone is welcome, including search and AI crawlers.
+User-agent: *
+Allow: /
+
+Sitemap: https://sarpsusuzer.com/sitemap.xml

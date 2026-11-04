@@ -1,0 +1,31 @@
+# Sarp Susuzer
+
+> Design engineer working globally. Product design, UI/UX and Framer builds for startups. Founder of Studio Magik. Also written Sarp Susüzer.
+
+I'm Sarp Susüzer, a design engineer working globally. I started as an industrial designer, moved into UI/UX, and now work on various products.
+
+I run Studio Magik (https://studiomagik.com), an embedded design and dev studio for startups, where we use AI to ship product design, branding and Framer builds faster. I care about calm interfaces, clear hierarchy and cutting what doesn't earn its place.
+
+"Become as good as the problem you're solving."
+
+## Pages
+
+- [Home](https://sarpsusuzer.com/): intro and selected client projects
+- [About](https://sarpsusuzer.com/about): background and bio
+
+## Selected projects
+
+- JupiterOne: graph based cyber security platform
+- Jobtogo: work-tech platform that connects companies with freelancers
+- Datassist: AI-powered payroll and HR management solutions (details not public yet: coming soon)
+- Apollo: AI-powered platform helping companies monitor, optimize, and report on their energy costs (details not public yet: under NDA)
+
+## Book a call
+
+- [Book a call](https://cal.com/sarpsusuzer/15min): Let's talk it through. Grab a time that works for you.
+
+## Contact
+
+- Email: sarp@susuzer.com
+- X / Twitter: https://x.com/sarpsusuzer
+- Studio Magik: https://studiomagik.com
