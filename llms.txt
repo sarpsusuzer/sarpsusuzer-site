@@ -23,6 +23,7 @@ I run Studio Magik (https://studiomagik.com), an embedded design and dev studio 
 - Uyanbi: 
 - Finance Dashboard: 
 - Arventek: 
+- FactoryPilot: 
 
 ## Book a call
 
