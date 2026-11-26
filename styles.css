@@ -109,12 +109,13 @@ a { color: inherit; text-decoration: none; }
 .slide[data-far="true"] { opacity: 0; pointer-events: none; }
 .slide:focus-visible { outline: 2px solid #1a1a1a; outline-offset: 4px; }
 .slide img {
-  /* shown as uploaded: no background, radius or inset; only scaled down if larger than the slot */
+  /* fills the full slot width, rounded corners */
   position: absolute;
   inset: 0;
   width: 100%;
   height: 100%;
-  object-fit: scale-down;
+  border-radius: var(--card-radius);
+  object-fit: cover;
   object-position: center;
   display: block;
   user-select: none;
