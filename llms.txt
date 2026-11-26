@@ -17,13 +17,13 @@ I run Studio Magik (https://studiomagik.com), an embedded design and dev studio 
 
 - JupiterOne: graph based cyber security platform
 - Jobtogo: work-tech platform that connects companies with freelancers
-- Datassist: AI-powered payroll and HR management solutions (details not public yet: coming soon)
-- Apollo: AI-powered platform helping companies monitor, optimize, and report on their energy costs (details not public yet: under NDA)
 - BSK HVAC: 
 - Uyanbi: 
 - Finance Dashboard: 
 - Arventek: 
 - FactoryPilot: 
+- Datassist: AI-powered payroll and HR management solutions (details not public yet: coming soon)
+- Apollo: AI-powered platform helping companies monitor, optimize, and report on their energy costs (details not public yet: under NDA)
 
 ## Book a call
 
